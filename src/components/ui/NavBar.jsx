@@ -37,7 +37,7 @@ function NavBar() {
         let meetingTopic = topicInput.current.value;
         let meetingLink = linkInput.current.value;
         if (!meetingTopic || !date || !meetingLink) {
-            alert("Please provide a topic and select a date.");
+            alert("Please provide a topic, link and select a date.");
             return;
         }
         axios.post(`${url}meeting.json`,{
