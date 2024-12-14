@@ -27,51 +27,45 @@ import {
 import axios from 'axios'
 
 function NavBar() {
-    const {addMeeting} = useContext(MeetingContext);
+    const {setMeetings} = useContext(MeetingContext);
     let url = 'https://meeting-6584e-default-rtdb.asia-southeast1.firebasedatabase.app/'
     const [date, setDate] = React.useState();
-    const [meetingData, setMeetingData] = useState([]);
     const topicInput = useRef(null);
 
     function handleSubmit(){
-        let newMeeting = topicInput.current.value;
-        axios.post(`${url}meet.json`,{
-            topic: newMeeting,
+        let meetingTopic = topicInput.current.value;
+        axios.post(`${url}meeting.json`,{
+            topic: meetingTopic,
             date: date,
         }).then(()=>{
-            console.log("data saved")
-            addMeeting(newMeeting);
             fetchData();
-        }).catch((error)=>{
-          console.log("Error saving meeting:", error);
         })
     }
 
     function fetchData(){
-        axios.get(`${url}meet.json`).then(meetingData=>{
-            let meets = [];
-            for(let key in meetingData.data){
-                let meet ={
-                    id: key,
-                    ...meetingData.data[key]
+        axios.get(`${url}meeting.json`).then(meeting=>{
+            let meetTask =[];
+            for(let key in meeting.data){
+                let meet = {
+                    id:key,
+                    ...meeting.data[key]
                 }
-                meetDatas.push(meet);
+                meetTask.push(meet);
             }
-            setMeetingData(meets);
-            addMeeting(meets);
-        })  
+            setMeetings(meetTask);
+        })
     }
 
     useEffect(()=>{
-        fetchData();
+        fetchData(); 
     }, [])
-
+  
   return (
     <div>
 
       <div className="border-b py-3 border-neutral-500">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
-            <Link>Meeting App</Link>
+            <Link to="/">Meeting App</Link>
             <div className="flex gap-4 items-center">
                 <Link to="/previous">Previous meetings</Link>
                 <Sheet>
@@ -101,7 +95,7 @@ function NavBar() {
                                     <Button
                                         variant={"outline"}
                                         className={cn(
-                                        "col-span-3 justify-start text-left font-normal",
+                                        "col-span-3 justify-start text-left font-normal gap-2",
                                         !date && "text-muted-foreground"
                                         )}
                                     >
