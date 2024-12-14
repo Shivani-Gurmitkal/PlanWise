@@ -28,7 +28,9 @@ let url = 'https://meeting-6584e-default-rtdb.asia-southeast1.firebasedatabase.a
 
 function Details() {
    let {meetings, setMeetings} = useContext(MeetingContext);
-   if(!meetings) return <h1>No Meetings</h1> 
+   if (!meetings || meetings.length === 0) {
+    return <h1 className="text-center text-xl font-medium mt-32">No Meetings Scheduled</h1>;
+  } 
 
    function handleDelete(id){
     axios.delete(`${url}meeting/${id}.json`)
