@@ -18,15 +18,23 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import axios from 'axios';
 const options = {
   weekday: 'long',
   day: 'numeric',
 };
 
+let url = 'https://meeting-6584e-default-rtdb.asia-southeast1.firebasedatabase.app/'
+
 function Details() {
-   let {meetings} = useContext(MeetingContext);
+   let {meetings, setMeetings} = useContext(MeetingContext);
    if(!meetings) return <h1>No Meetings</h1> 
 
+   function handleDelete(id){
+    axios.delete(`${url}meeting/${id}.json`)
+    const updateMeeting = meetings.filter(meeting => meeting.id !== id) // filter
+    setMeetings(updateMeeting);
+   }
    
   return (
     <div>
@@ -43,7 +51,7 @@ function Details() {
           <TableBody>
           {
             meetings.map(meeting => (
-              <TableRow key={meeting.id}>
+              <TableRow key={meeting.id} id={meeting.id}>
                 <TableCell className="font-medium w-72">{meeting.topic}</TableCell>
                 <TableCell className="w-44">{new Date(meeting.date).toLocaleDateString('en',options)}</TableCell>
                 <TableCell className="w-72">Meeting Link</TableCell>
@@ -65,7 +73,7 @@ function Details() {
                         <DropdownMenuItem>
                           <span>Edit</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={()=>handleDelete(meeting.id)}>
                           <span className="text-red-700">Delete</span>
                         </DropdownMenuItem>
                       </DropdownMenuGroup>

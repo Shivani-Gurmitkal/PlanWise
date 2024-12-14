@@ -34,6 +34,10 @@ function NavBar() {
 
     function handleSubmit(){
         let meetingTopic = topicInput.current.value;
+        if (!meetingTopic || !date) {
+            alert("Please provide a topic and select a date.");
+            return;
+        }
         axios.post(`${url}meeting.json`,{
             topic: meetingTopic,
             date: date,
