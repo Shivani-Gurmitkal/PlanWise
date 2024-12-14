@@ -18,6 +18,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+const options = {
+  weekday: 'long',
+  day: 'numeric',
+};
 
 function Details() {
    let {meetings} = useContext(MeetingContext);
@@ -41,7 +45,7 @@ function Details() {
             meetings.map(meeting => (
               <TableRow key={meeting.id}>
                 <TableCell className="font-medium w-72">{meeting.topic}</TableCell>
-                <TableCell className="w-44">{meeting.date}</TableCell>
+                <TableCell className="w-44">{new Date(meeting.date).toLocaleDateString('en',options)}</TableCell>
                 <TableCell className="w-72">Meeting Link</TableCell>
                 <TableCell className="w-40">
                   <DropdownMenu>
