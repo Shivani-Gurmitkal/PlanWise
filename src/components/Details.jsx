@@ -54,7 +54,7 @@ function Details() {
               <TableRow key={meeting.id} id={meeting.id}>
                 <TableCell className="font-medium w-72">{meeting.topic}</TableCell>
                 <TableCell className="w-44">{new Date(meeting.date).toLocaleDateString('en',options)}</TableCell>
-                <TableCell className="w-72">Meeting Link</TableCell>
+                <TableCell className="w-72 hover:cursor-pointer">{meeting.link}</TableCell>
                 <TableCell className="w-40">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

@@ -31,18 +31,22 @@ function NavBar() {
     let url = 'https://meeting-6584e-default-rtdb.asia-southeast1.firebasedatabase.app/'
     const [date, setDate] = React.useState();
     const topicInput = useRef(null);
+    const linkInput = useRef(null);
 
     function handleSubmit(){
         let meetingTopic = topicInput.current.value;
-        if (!meetingTopic || !date) {
+        let meetingLink = linkInput.current.value;
+        if (!meetingTopic || !date || !meetingLink) {
             alert("Please provide a topic and select a date.");
             return;
         }
         axios.post(`${url}meeting.json`,{
             topic: meetingTopic,
+            link: meetingLink,
             date: date,
         }).then(()=>{
             fetchData();
+            setDate(null);
         })
     }
 
@@ -89,6 +93,12 @@ function NavBar() {
                             Topic
                             </Label>
                         <Input id="name" ref={topicInput} placeholder="Meeting Title" className="col-span-3" />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="name" className="text-right">
+                            Link
+                            </Label>
+                        <Input id="name" ref={linkInput} placeholder="Meeting Link" className="col-span-3" />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="username" className="text-right">
