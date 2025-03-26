@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useState } from 'react'
 import MeetingContext from '@/context/MeetingContext';
 import { HiOutlineDotsHorizontal } from "react-icons/hi";
 import {
@@ -9,7 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -19,79 +18,120 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import axios from 'axios';
-const options = {
-  weekday: 'long',
-  day: 'numeric',
-};
+import { toast } from "sonner";
+const options = { weekday: 'long', day: 'numeric'};
+import Edit from "./Edit";
 
-let url = 'https://meeting-6584e-default-rtdb.asia-southeast1.firebasedatabase.app/'
+const url = 'https://meetingapp-8283b-default-rtdb.asia-southeast1.firebasedatabase.app/'
+
 
 function Details() {
-   let {meetings, setMeetings} = useContext(MeetingContext);
+  let { meetings = [], setMeetings } = useContext(MeetingContext);
+   const [editingMeeting, setEditingMeeting] = useState(null);
    if (!meetings || meetings.length === 0) {
-    return <h1 className="text-center text-xl font-medium mt-32">No Meetings Scheduled</h1>;
+    return (
+      <div className="text-center mt-32">
+        <h1 className="text-2xl font-semibold text-gray-700">No Meetings Scheduled</h1>
+        <p className="text-gray-500 mt-2">Create a new meeting to get started.</p>
+      </div>
+    );
   } 
 
-   function handleDelete(id){
-    axios.delete(`${url}meeting/${id}.json`)
-    const updateMeeting = meetings.filter(meeting => meeting.id !== id) // filter
-    setMeetings(updateMeeting);
-   }
-   
+  const handleUpdate = async (updatedMeeting) => {
+    try {
+      await axios.put(`${url}/meeting/${updatedMeeting.id}.json`, updatedMeeting);
+      setMeetings(meetings.map((meeting) =>
+        meeting.id === updatedMeeting.id ? updatedMeeting : meeting
+      ));
+      toast.success("Meeting updated successfully!");
+      setEditingMeeting(null);
+    } catch (error) {
+      toast.error("Failed to update meeting");
+    }
+  }
+
+  async function handleDelete(id) {
+    try {
+      await axios.delete(`${url}/meeting/${id}.json`);
+      const updatedMeeting = meetings.filter(meeting => meeting.id !== id);
+      setMeetings(updatedMeeting);
+      toast.success("Meeting deleted successfully!");
+    } catch (error) {
+      toast.error("Failed to delete meeting");
+    }
+  }
+
   return (
-    <div>
-      <div className="mt-12">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-72 text-xl text-black">Topic</TableHead>
-              <TableHead className="w-44 text-xl text-black">Date</TableHead>
-              <TableHead className="w-64 text-xl text-black">Link</TableHead>
-              <TableHead className="w-40 text-xl text-black">Select</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-          {
-            meetings.map(meeting => (
-              <TableRow key={meeting.id} id={meeting.id}>
-                <TableCell className="font-medium w-72">{meeting.topic}</TableCell>
-                <TableCell className="w-44">{new Date(meeting.date).toLocaleDateString('en',options)}</TableCell>
-                <TableCell className="w-72 hover:cursor-pointer">{meeting.link}</TableCell>
-                <TableCell className="w-40">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost">
-                        <HiOutlineDotsHorizontal />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56">
-                      <DropdownMenuGroup>
-                        <DropdownMenuItem>
-                          <span>New Meeting</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <span>Copy Invitation</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <span>Edit</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={()=>handleDelete(meeting.id)}>
-                          <span className="text-red-700">Delete</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))
-          }
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+
+    <div className="py-16 px-4  overflow-x-auto w-full">
+    <Table className="border border-gray-300 rounded-lg w-full min-w-[700px]">
+      <TableHeader>
+        <TableRow className="bg-gray-100">
+          <TableHead className="w-[200px] text-lg font-semibold text-gray-800 text-center whitespace-nowrap">Topic</TableHead>
+          <TableHead className="w-[300px] text-lg font-semibold text-gray-800 text-center whitespace-nowrap">Link</TableHead>
+          <TableHead className="w-[150px] text-lg font-semibold text-gray-800 text-center whitespace-nowrap">Date</TableHead>
+          <TableHead className="w-[100px] text-lg font-semibold text-gray-800 text-center whitespace-nowrap">Time</TableHead>
+          <TableHead className="w-[150px] text-lg font-semibold text-gray-800 text-center whitespace-nowrap">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {meetings.map((meeting) => (
+          <TableRow key={meeting.id} className="hover:bg-gray-50 transition">
+            
+            {/* Topic */}
+            <TableCell className="w-[200px] text-center font-medium text-gray-700 whitespace-nowrap">{meeting.topic}</TableCell>
+            
+            {/* Meeting Link */}
+            <TableCell className="text-center w-[300px]">
+              <a href={meeting.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 w-[300px] hover:underline">
+                {meeting.link}
+              </a>
+            </TableCell>
+
+            {/* Date */}
+            <TableCell className="text-center w-[150px] whitespace-nowrap">
+              {new Date(meeting.date).toLocaleDateString("en", options)}
+            </TableCell>
+
+            {/* Time */}
+            <TableCell className="text-center w-[100px] whitespace-nowrap">{meeting.time}</TableCell>
+
+            {/* Action Options */}
+            <TableCell className="text-center w-[150px] whitespace-nowrap">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost">
+                    <HiOutlineDotsHorizontal className="text-gray-600 hover:text-gray-900" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem>
+                      <span>📋 Copy Invitation</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setEditingMeeting(meeting)}>
+                      <span>✏️ Edit</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleDelete(meeting.id)}>
+                      <span className="text-red-700">🗑️ Delete</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+
+    <Edit
+        editingMeeting={editingMeeting}
+        setEditingMeeting={setEditingMeeting}
+        handleUpdate={handleUpdate}
+      />
+  </div>
+  
   )
 }
 
 export default Details
-
-
