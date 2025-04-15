@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,10 +9,39 @@ import { CalendarIcon } from "lucide-react"
 import { format } from "date-fns"
 import { Calendar } from "@/components/ui/calendar"
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 
 
 const Edit = ({ editingMeeting, setEditingMeeting, handleUpdate }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const {register, handleSubmit, setValue, reset, watch } = useForm ({
+    defaultValues: {
+      topic: "",
+      link: "",
+      date: "",
+      time: ""
+    }
+  });
+
+  useEffect(()=>{
+    if(editingMeeting){
+      reset({
+        topic: editingMeeting.topic || "",
+        link: editingMeeting.link || "",
+        date: editingMeeting.date || "",
+        time: editingMeeting.time || ""
+      });
+    }
+  }, [editingMeeting,reset]);
+
+  const onSubmit = (data) => {
+    handleUpdate({ ...editingMeeting, ...data });
+    setEditingMeeting(null);
+  };
+
+  const selectedDate = watch("date");
+  const selectedTime = watch("time");
+
   if (!editingMeeting) return null; 
 
   return (
@@ -25,57 +54,48 @@ const Edit = ({ editingMeeting, setEditingMeeting, handleUpdate }) => {
           </DialogDescription>
         </DialogHeader>
         
+        <form onSubmit={handleSubmit(onSubmit)} className="px-4 space-y-4">
         <div className="px-4">
           {/* Topic */}
           <label className="text-sm text-gray-600">Topic</label>
-          <Input
-            value={editingMeeting.topic}
-            onChange={(e) => setEditingMeeting({ ...editingMeeting, topic: e.target.value })}
-            className="w-full mb-3 mt-2  focus:outline-non"
-          />
-
+          <Input {...register("topic",{required: true})} className="w-full mb-3 mt-2" />
           {/* Meeting Link */}
           <label className="text-sm text-gray-600">Meeting Link</label>
-          <Input
-            value={editingMeeting.link}
-            onChange={(e) => setEditingMeeting({ ...editingMeeting, link: e.target.value })}
-            className="w-full mb-3 mt-2 "
-          />
-
+          <Input {...register("link", {required: true})} className="w-full mb-3 mt-2 " />
           {/* Date */}
-          <label htmlFor="username" className="text-sm text-gray-600">Date</label>
+          <label className="text-sm text-gray-600">Date</label>
           <Popover open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild>
               <Button
+                type="button"
                 variant="outline"
                 className={cn(
                 "justify-start text-left font-normal gap-2 w-full mb-3 mt-2",
-                !editingMeeting.date && "text-muted-foreground"
+                !selectedDate && "text-muted-foreground"
                 )}
               >
                 <CalendarIcon />
-                {editingMeeting.date
-                ? format(new Date(editingMeeting.date), "PPP")
-                : <span>Pick a date</span>}
+                {selectedDate ? format(new Date(selectedDate), "PPP") : <span>Pick a date</span>}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0 z-50 overflow-visible" side="bottom" align="start">
               <Calendar
                 mode="single"
-                selected={editingMeeting.date ? new Date(editingMeeting.date) : undefined}
+                selected={selectedDate ? new Date(selectedDate) : undefined}
                 onSelect={(selectedDate) => {
                 if (selectedDate) {
-                  setEditingMeeting({ ...editingMeeting, date: format(selectedDate, "yyyy-MM-dd") }); // ✅ Fixes timezone issue
-                  setIsOpen(false); // ✅ Close popover after selecting date
+                  setValue("date", format(selectedDate, "yyyy-MM-dd"));
+                  setIsOpen(false); 
                 }
                }}
+               disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                 initialFocus/>
             </PopoverContent>
           </Popover>
-
             {/* Time */}
             <label className="text-sm text-gray-600">Time</label>
-            <Select value={editingMeeting.time} onValueChange={(value) => setEditingMeeting({ ...editingMeeting, time: value })}>
+            <Select value={selectedTime} 
+            onValueChange={(value) => setValue("time", value )}>
               <SelectTrigger className="col-span-3 w-full mb-4 mt-2">
                 <SelectValue placeholder="Select time" />
               </SelectTrigger>
@@ -88,14 +108,17 @@ const Edit = ({ editingMeeting, setEditingMeeting, handleUpdate }) => {
             </Select>
             
             {/* Buttons */}
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setEditingMeeting(null)}>Cancel</Button>
-              <Button onClick={() => handleUpdate(editingMeeting)}>Save</Button>
-            </div>
+            <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="outline" onClick={() => setEditingMeeting(null)}>
+              Cancel
+            </Button>
+            <Button type="submit">Save</Button>
+          </div>
         </div>
-
+      </form>
       </DialogContent>
     </Dialog>
+    
   );
 };
 

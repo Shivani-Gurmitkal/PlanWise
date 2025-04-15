@@ -62,6 +62,7 @@ function Home() {
           </SheetContent>
         </Sheet>
       </nav>
+      
       <div className="max-w-5xl mx-auto text-xl font-semibold text-gray-700 px-4 py-4">
         Welcome, {user?.username}! 🎉
       </div>
